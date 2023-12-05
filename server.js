@@ -14,8 +14,9 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "pug");
 app.set("views", "./views/pug");
 
+// 1, 2, Set up the engine template and template Power
 app.route("/").get((req, res) => {
-  res.render("index");
+  res.render("index", { title: "Hello", message: "Please log in" });
 });
 
 const PORT = process.env.PORT || 3000;
