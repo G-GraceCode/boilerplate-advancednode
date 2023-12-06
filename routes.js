@@ -96,6 +96,7 @@ module.exports = function (app, myDataBase) {
     req.logout();
     res.redirect("/");
   });
+  
 };
 
 // 8. Create New Middleware
