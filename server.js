@@ -16,6 +16,13 @@ const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
+//Authentication with Socket.IO
+const passportSocketIo = require("passport.socketio");
+const cookieParser = require("cookie-parser");
+const MongoStore = require("connect-mongo")(session);
+const URI = process.env.MONGO_URI;
+const store = new MongoStore({ url: URI });
+
 fccTesting(app); //For FCC testing purposes
 app.use("/public", express.static(process.cwd() + "/public"));
 app.use(express.json());
@@ -26,8 +33,22 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: true,
-    saveUninitialized: true,
+    key: "express.sid",
+    store: store,
+    saveUninitialized: true, //tell Socket.IO which session to relate to
     cookie: { secure: false },
+  }),
+);
+
+//Handling the socket io middleware
+io.use(
+  passportSocketIo.authorize({
+    cookieParser: cookieParser,
+    key: "express.sid",
+    secret: process.env.SESSION_SECRET,
+    store: store,
+    success: onAuthorizeSuccess,
+    fail: onAuthorizeFail,
   }),
 );
 
@@ -52,13 +73,31 @@ myDB(async (client) => {
   let currentUsers = 0;
   io.on("connection", (socket) => {
     currentUsers = +1; // increasing the amount of users
-    io.emit("user count", currentUsers);
+    io.emit("user", {
+      username: socket.request.user.username,
+      currentUsers,
+      connected: true,
+    });
+
+    // Send and Display Chat Messages both on cleint and server side
+    socket.on("chat message", (message) => {
+      io.emit("chat message", {
+        username: socket.request.user.username,
+        message,
+      });
+    });
+
+    console.log("user " + socket.request.user.username + " connected");
     console.log("A user has connected");
 
     // Handle a Disconnect, when a user log out
     socket.on("disconnect", () => {
       currentUsers = -1; // discreasing the amount of users
-      io.emit("user count", currentUsers);
+      io.emit("user count", {
+        username: socket.request.user.username,
+        currentUsers,
+        connected: false,
+      });
       console.log("A user has disconnected");
     });
   });
@@ -71,6 +110,18 @@ Emit is the most common way of communicating you will use. When you emit somethi
     res.render("index", { title: e, message: "Unable to connect to database" });
   });
 });
+
+// define the success, and fail callback functions: (from io and session middleware)
+function onAuthorizeSuccess(data, accept) {
+  console.log("successful connection to socket.io");
+  accept(null, true);
+}
+
+function onAuthorizeFail(data, message, error, accept) {
+  if (error) throw new Error(message);
+  console.log("failed connection to socket.io:", message);
+  accept(null, false);
+}
 
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
