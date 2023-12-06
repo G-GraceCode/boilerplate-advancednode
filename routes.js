@@ -10,6 +10,7 @@ module.exports = function (app, myDataBase) {
       message: "Please login",
       showLogin: true,
       showRegistration: true,
+      showSocialAuth: true,
     });
   });
 
@@ -83,11 +84,20 @@ module.exports = function (app, myDataBase) {
     ),
   );
 
-  // 8) Create New Middleware
-  function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.redirect("/");
-  }
+// Implementation of Social Authentication
+
+  app.route("/auth/github").get(passport.authenticate("github"));
+  app.route("/auth/github/callback").get(
+    passport.authenticate("github", { failureRedirect: "/" }, (req, res) => {
+      res.redirect("/profile");
+    }),
+  );
 };
+
+// 8) Create New Middleware
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/");
+}

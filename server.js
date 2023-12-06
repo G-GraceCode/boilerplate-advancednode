@@ -4,9 +4,7 @@ const routes = require("./routes.js");
 const auth = require("./auth.js");
 const express = require("express");
 const myDB = require("./connection");
-const { ObjectID } = require("mongodb");
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
-const bcrypt = require("bcrypt");
 
 // setting up passport
 const session = require("express-session");
