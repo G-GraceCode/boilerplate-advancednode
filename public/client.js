@@ -9,7 +9,6 @@ $(document).ready(function () {
       data.username +
       (data.connected ? " has joined the chat." : " has left the chat.");
     $("#messages").append($("<li>").html("<b>" + message + "</b>"));
-    console.log("data", data);
   });
 
   // showing the messages of a user,

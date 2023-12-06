@@ -70,13 +70,10 @@ module.exports = function (app, myDataBase) {
         }
       });
     },
-    passport.authenticate(
-      "local",
-      { failureRedirect: "/" },
-      (req, res, next) => {
-        res.redirect("/profile");
-      },
-    ),
+    passport.authenticate("local", { failureRedirect: "/" }),
+    (req, res, next) => {
+      res.redirect("/profile");
+    },
   );
 
   // Implementation of Social Authentication
