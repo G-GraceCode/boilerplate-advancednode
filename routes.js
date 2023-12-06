@@ -45,7 +45,7 @@ module.exports = function (app, myDataBase) {
   // Route /resgister
   app.route("/register").post(
     (req, res, next) => {
-      myDataBase.findOne({ username: req.body.username }, (user, err) => {
+      myDataBase.findOne({ username: req.body.username }, (err, user) => {
         if (err) {
           next(err);
         } else if (user) {
