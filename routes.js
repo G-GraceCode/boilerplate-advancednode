@@ -1,4 +1,5 @@
 const passport = require("passport");
+const bcrypt = require("bcrypt");
 
 module.exports = function (app, myDataBase) {
   // 1, 2, Set up the engine template and template Power
@@ -29,16 +30,10 @@ module.exports = function (app, myDataBase) {
     res.render("profile", { username: req.user.username });
   });
 
-  // login a user route /logout
-  app.route("/logout").get((req, res) => {
-    req.logout();
-    res.redirect("/");
-  });
-
   // middleware for missing pages
-  app.use((req, res, next) => {
-    res.status(404).type("text").send("Not Found");
-  });
+  // app.use((req, res, next) => {
+  //   res.status(404).type("text").send("Not Found");
+  // });
 
   /* Resgistration of new new users logic
   1. resgister the user
@@ -84,17 +79,26 @@ module.exports = function (app, myDataBase) {
     ),
   );
 
-// Implementation of Social Authentication
+  // Implementation of Social Authentication
 
   app.route("/auth/github").get(passport.authenticate("github"));
-  app.route("/auth/github/callback").get(
-    passport.authenticate("github", { failureRedirect: "/" }, (req, res) => {
-      res.redirect("/profile");
-    }),
-  );
+  app
+    .route("/auth/github/callback")
+    .get(
+      passport.authenticate("github", { failureRedirect: "/" }),
+      (req, res) => {
+        res.redirect("/profile");
+      },
+    );
+
+  // login a user route /logout
+  app.route("/logout").get((req, res) => {
+    req.logout();
+    res.redirect("/");
+  });
 };
 
-// 8) Create New Middleware
+// 8. Create New Middleware
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();

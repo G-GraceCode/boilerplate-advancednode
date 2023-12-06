@@ -39,7 +39,7 @@ module.exports = function (app, myDataBase) {
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: "https://h23jc4-3000.csb.app/auth/github/callback",
       },
-      function (accessToken, refreshToken, profile, cd) {
+      function (accessToken, refreshToken, profile, cb) {
         console.log(profile);
         //Database logic here with callback containing your user object
         myDataBase.findOneAndUpdate(
@@ -60,7 +60,7 @@ module.exports = function (app, myDataBase) {
               last_login: new Date(),
             },
             $inc: {
-              lo,
+              login_count: 1,
             },
           },
           { upsert: true, new: true },
